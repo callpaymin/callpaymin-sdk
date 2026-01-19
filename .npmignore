@@ -1,0 +1,33 @@
+# Source files (we ship compiled)
+src/
+
+# Examples (users can view on GitHub)
+examples/
+
+# Config files
+tsconfig.json
+.eslintrc*
+.prettierrc*
+
+# Development
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# Tests
+__tests__/
+*.test.ts
+*.spec.ts
+coverage/
+
+# Docs source
+docs/
+
+# OS
+.DS_Store
+Thumbs.db

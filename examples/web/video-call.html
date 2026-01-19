@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CallPayMin Video Call Example</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: white; min-height: 100vh; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    h1 { margin-bottom: 20px; }
+    .video-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .video-box { position: relative; background: #16213e; border-radius: 12px; overflow: hidden; aspect-ratio: 16/9; }
+    .video-box video { width: 100%; height: 100%; object-fit: cover; }
+    .video-box .label { position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 5px 10px; border-radius: 4px; font-size: 14px; }
+    .controls { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+    .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background: #4CAF50; color: white; }
+    .btn-primary:hover { background: #45a049; }
+    .btn-danger { background: #f44336; color: white; }
+    .btn-danger:hover { background: #da190b; }
+    .btn-secondary { background: #555; color: white; }
+    .btn-secondary:hover { background: #666; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .status { text-align: center; padding: 10px; background: #16213e; border-radius: 8px; margin-bottom: 20px; }
+    .billing-info { background: #16213e; padding: 15px; border-radius: 8px; }
+    .billing-info h3 { margin-bottom: 10px; }
+    .billing-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+    @media (max-width: 768px) { .video-container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>CallPayMin Video Call</h1>
+
+    <div class="status" id="status">Status: Ready to call</div>
+
+    <div class="video-container">
+      <div class="video-box">
+        <video id="localVideo" autoplay muted playsinline></video>
+        <div class="label">You</div>
+      </div>
+      <div class="video-box">
+        <video id="remoteVideo" autoplay playsinline></video>
+        <div class="label">Remote</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-primary" id="startBtn" onclick="startCall()">Start Call</button>
+      <button class="btn btn-secondary" id="muteBtn" onclick="toggleMute()" disabled>Mute</button>
+      <button class="btn btn-secondary" id="videoBtn" onclick="toggleVideo()" disabled>Video Off</button>
+      <button class="btn btn-danger" id="endBtn" onclick="endCall()" disabled>End Call</button>
+    </div>
+
+    <div class="billing-info" id="billingInfo" style="display: none;">
+      <h3>Call Billing</h3>
+      <div class="billing-row"><span>Duration:</span><span id="duration">0:00</span></div>
+      <div class="billing-row"><span>Rate:</span><span id="rate">$0.00/min</span></div>
+      <div class="billing-row"><span>Total:</span><span id="total">$0.00</span></div>
+    </div>
+  </div>
+
+  <!-- Include the SDK (use your bundled version) -->
+  <script type="module">
+    import { CallPayMin, CallPayMinWebRTC } from 'https://unpkg.com/@callpaymin/sdk/dist/index.esm.js';
+
+    // Initialize SDK with your API key
+    const client = new CallPayMin({
+      apiKey: 'YOUR_API_KEY', // Replace with your API key
+      // For development, you can use:
+      // baseUrl: 'http://localhost:3000/api/v1',
+    });
+
+    let callClient = null;
+    let isMuted = false;
+    let isVideoOff = false;
+    let billingInterval = null;
+    let callStartTime = null;
+
+    // Make functions available globally
+    window.startCall = startCall;
+    window.endCall = endCall;
+    window.toggleMute = toggleMute;
+    window.toggleVideo = toggleVideo;
+
+    async function startCall() {
+      try {
+        setStatus('Connecting...');
+        document.getElementById('startBtn').disabled = true;
+
+        callClient = new CallPayMinWebRTC({
+          client,
+          onLocalStream: (stream) => {
+            document.getElementById('localVideo').srcObject = stream;
+          },
+          onRemoteStream: (stream) => {
+            document.getElementById('remoteVideo').srcObject = stream;
+          },
+          onStateChange: (state) => {
+            setStatus(`Status: ${state}`);
+            if (state === 'connected') {
+              enableControls(true);
+              startBillingTimer();
+            }
+          },
+          onError: (error) => {
+            setStatus(`Error: ${error.message}`);
+            enableControls(false);
+            document.getElementById('startBtn').disabled = false;
+          },
+          onCallEnded: (call) => {
+            stopBillingTimer();
+            showFinalBilling(call);
+            setStatus('Call ended');
+            enableControls(false);
+            document.getElementById('startBtn').disabled = false;
+          },
+        });
+
+        // Start the call
+        const call = await callClient.startCall({
+          participants: [
+            { externalId: 'user_123', displayName: 'You', role: 'client' },
+            { externalId: 'expert_456', displayName: 'Expert', role: 'expert' },
+          ],
+          billing: {
+            payerId: 'user_123',
+            ratePerMinute: 5, // $5 per minute
+          },
+        });
+
+        document.getElementById('rate').textContent = `$${call.billing?.ratePerMinute || 5}/min`;
+        document.getElementById('billingInfo').style.display = 'block';
+        callStartTime = Date.now();
+
+      } catch (error) {
+        setStatus(`Failed: ${error.message}`);
+        document.getElementById('startBtn').disabled = false;
+      }
+    }
+
+    async function endCall() {
+      if (callClient) {
+        await callClient.endCall();
+        callClient = null;
+      }
+    }
+
+    function toggleMute() {
+      if (!callClient) return;
+      isMuted = !isMuted;
+      callClient.toggleAudio(!isMuted);
+      document.getElementById('muteBtn').textContent = isMuted ? 'Unmute' : 'Mute';
+    }
+
+    function toggleVideo() {
+      if (!callClient) return;
+      isVideoOff = !isVideoOff;
+      callClient.toggleVideo(!isVideoOff);
+      document.getElementById('videoBtn').textContent = isVideoOff ? 'Video On' : 'Video Off';
+    }
+
+    function setStatus(message) {
+      document.getElementById('status').textContent = message;
+    }
+
+    function enableControls(enabled) {
+      document.getElementById('muteBtn').disabled = !enabled;
+      document.getElementById('videoBtn').disabled = !enabled;
+      document.getElementById('endBtn').disabled = !enabled;
+    }
+
+    function startBillingTimer() {
+      billingInterval = setInterval(() => {
+        if (!callStartTime) return;
+        const elapsed = Math.floor((Date.now() - callStartTime) / 1000);
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = elapsed % 60;
+        document.getElementById('duration').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+        const ratePerMinute = 5; // Should come from call object
+        const cost = (elapsed / 60) * ratePerMinute;
+        document.getElementById('total').textContent = `$${cost.toFixed(2)}`;
+      }, 1000);
+    }
+
+    function stopBillingTimer() {
+      if (billingInterval) {
+        clearInterval(billingInterval);
+        billingInterval = null;
+      }
+    }
+
+    function showFinalBilling(call) {
+      if (call.billing) {
+        const minutes = Math.floor(call.duration / 60);
+        const seconds = call.duration % 60;
+        document.getElementById('duration').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        document.getElementById('total').textContent = `$${call.billing.totalCost.toFixed(2)}`;
+      }
+    }
+  </script>
+</body>
+</html>

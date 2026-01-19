@@ -1,0 +1,68 @@
+{
+  "name": "@callpaymin/sdk",
+  "version": "1.0.0",
+  "description": "Official JavaScript/TypeScript SDK for CallPayMin API - per-minute billing video calls, chat, and AI summaries",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "callpaymin",
+    "video-call",
+    "webrtc",
+    "billing",
+    "per-minute",
+    "ai-summary",
+    "chat",
+    "stripe",
+    "payments",
+    "sdk",
+    "api"
+  ],
+  "author": "CallPayMin <support@callpaymin.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/callpaymin/sdk.git"
+  },
+  "homepage": "https://docs.callpaymin.com",
+  "bugs": {
+    "url": "https://github.com/callpaymin/sdk/issues"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.19.0",
+    "@typescript-eslint/parser": "^6.19.0"
+  },
+  "peerDependencies": {
+    "react-native-webrtc": ">=111.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react-native-webrtc": {
+      "optional": true
+    }
+  }
+}
