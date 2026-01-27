@@ -2,6 +2,14 @@
 
 Official JavaScript/TypeScript SDK for the CallPayMin API. Build per-minute billing video calls, chat messaging, and AI summaries into your applications.
 
+## Documentation
+
+- **[Getting Started](./docs/GETTING_STARTED.md)** - Step-by-step guide to integrate CallPayMin
+- **[Business Guide](./docs/BUSINESS_GUIDE.md)** - Payment modes, pricing, use cases, and revenue models
+- **[Integration Guide](./docs/INTEGRATION_GUIDE.md)** - Complete technical integration guide for both payment modes
+- **[API Access by Payment Mode](./docs/API_ACCESS_BY_PAYMENT_MODE.md)** - API scopes and features available in each mode
+- **[Code Examples](./examples/)** - Full working examples for Self-Managed and Fully Managed modes
+
 ## Installation
 
 ```bash
@@ -320,6 +328,12 @@ new CallPayMin({
 
 ## Examples
 
+### Integration Examples
+- **[Self-Managed Integration](./examples/node/self-managed-integration.ts)** - Complete backend integration for Self-Managed payment mode
+- **[Fully Managed Integration](./examples/node/fully-managed-integration.ts)** - Complete backend integration for Fully Managed payment mode
+- **[Webhook Handler](./examples/node/webhooks.ts)** - Production-ready webhook implementation with signature verification
+
+### Platform Examples
 - [Web Video Call](./examples/web/video-call.html) - Browser-based video calling
 - [React Native](./examples/react-native/VideoCallScreen.tsx) - Mobile video calling
 - [Node.js Server](./examples/node/server-integration.ts) - Backend integration
