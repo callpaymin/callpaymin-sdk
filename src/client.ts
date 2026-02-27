@@ -9,6 +9,8 @@ import { Users } from './resources/users';
 import { Experts } from './resources/experts';
 import { Summaries } from './resources/summaries';
 import { Organization } from './resources/organization';
+import { Rooms } from './resources/rooms';
+import { WorkSessions } from './resources/workSessions';
 
 export class CallPayMin {
   private config: Required<CallPayMinConfig>;
@@ -25,6 +27,10 @@ export class CallPayMin {
   public summaries: Summaries;
   /** Organization settings */
   public organization: Organization;
+  /** Meeting room management */
+  public rooms: Rooms;
+  /** Work session management */
+  public workSessions: WorkSessions;
 
   constructor(config: CallPayMinConfig) {
     if (!config.apiKey) {
@@ -44,6 +50,8 @@ export class CallPayMin {
     this.experts = new Experts(this);
     this.summaries = new Summaries(this);
     this.organization = new Organization(this);
+    this.rooms = new Rooms(this);
+    this.workSessions = new WorkSessions(this);
   }
 
   /**

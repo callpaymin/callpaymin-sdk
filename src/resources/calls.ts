@@ -11,6 +11,8 @@ import type {
   RecordingInfo,
   TranscriptionInfo,
   CallCredentials,
+  CallBillingIncrementResult,
+  CallHeartbeatResult,
 } from '../types';
 
 export class Calls {
@@ -183,6 +185,38 @@ export class Calls {
     return this.client.request<TranscriptionInfo>(
       'POST',
       `/calls/${callId}/transcription`
+    );
+  }
+
+  /**
+   * Send heartbeat (30-second liveness ping)
+   * Should be called every 30 seconds while call is active
+   * Returns balance lock status so client can end call if needed
+   */
+  async heartbeat(callId: string, payerExternalId: string): Promise<CallHeartbeatResult> {
+    return this.client.request<CallHeartbeatResult>(
+      'POST',
+      `/calls/${callId}/heartbeat`,
+      { payerExternalId }
+    );
+  }
+
+  /**
+   * Process billing increment (~every 5 minutes)
+   * Deducts from payer's balance incrementally during active call
+   *
+   * @example
+   * ```typescript
+   * const result = await client.calls.billingIncrement(callId);
+   * if (result.shouldEndCall) {
+   *   await client.calls.end(callId);
+   * }
+   * ```
+   */
+  async billingIncrement(callId: string): Promise<CallBillingIncrementResult> {
+    return this.client.request<CallBillingIncrementResult>(
+      'POST',
+      `/calls/${callId}/billing-increment`
     );
   }
 }

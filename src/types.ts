@@ -406,6 +406,160 @@ export interface Plan {
 }
 
 // ============================================
+// Meeting Rooms
+// ============================================
+
+export interface Room {
+  id: string;
+  expertExternalId: string;
+  expertId: string;
+  name: string;
+  description?: string;
+  status: 'scheduled' | 'active' | 'closed';
+  isActive: boolean;
+  maxParticipants: number;
+  participants: RoomParticipant[];
+  activeBillingSessions: Record<string, RoomBillingSession>;
+  expertRate: number;
+  scheduledTime?: string;
+  scheduledEndTime?: string;
+  meetingLink?: string;
+  settings?: Record<string, any>;
+  stats?: {
+    totalSessions: number;
+    totalRevenue: number;
+    totalEarnings: number;
+    totalDuration: number;
+  };
+  metadata?: Record<string, any>;
+  createdAt: string;
+}
+
+export interface RoomParticipant {
+  id: string;
+  externalId: string;
+  displayName?: string;
+  role: 'host' | 'participant';
+  joinedAt: string;
+}
+
+export interface RoomBillingSession {
+  participantExternalId: string;
+  participantName?: string;
+  startTimestamp: string;
+  lastBilledTimestamp: string;
+  lastHeartbeat: string;
+  expertRate: number;
+  amountChargedSoFar: number;
+  balanceAtStart: number;
+  status: 'active' | 'ended';
+}
+
+export interface CreateRoomParams {
+  expertExternalId: string;
+  name: string;
+  description?: string;
+  scheduledTime?: string;
+  scheduledEndTime?: string;
+  maxParticipants?: number;
+  meetingBaseUrl?: string;
+  settings?: Record<string, any>;
+  metadata?: Record<string, any>;
+}
+
+export interface JoinRoomParams {
+  participantExternalId: string;
+  participantName?: string;
+}
+
+export interface JoinRoomResult {
+  roomId: string;
+  participantId: string;
+  sfuProvider: string;
+  sfuToken: string;
+  mediasoupUrl?: string;
+  balance: number;
+  expertRate: number;
+  affordableMinutes: number;
+}
+
+export interface RoomBillingIncrementResult {
+  success: boolean;
+  skipped?: boolean;
+  minutesBilled: number;
+  actualCharge: number;
+  newBalance: number;
+  totalCharged: number;
+  shouldDisconnect?: boolean;
+  insufficientBalance?: boolean;
+  reason?: string;
+}
+
+// ============================================
+// Work Sessions
+// ============================================
+
+export interface WorkSession {
+  id: string;
+  jobId: string;
+  questerId: string;
+  workerId: string;
+  workerExternalId: string;
+  questerExternalId: string;
+  status: 'active' | 'completed' | 'paused' | 'disconnected';
+  billingStatus: 'pending' | 'active' | 'completed';
+  startTime: string;
+  endTime?: string;
+  duration?: number;
+  ratePerMinute: number;
+  amountBilledSoFar: number;
+  lastBilledAt?: string;
+  totalCost?: number;
+  organizationId: string;
+  metadata?: Record<string, any>;
+  createdAt: string;
+}
+
+export interface CreateWorkSessionParams {
+  jobId: string;
+  questerId: string;
+  workerId: string;
+  ratePerMinute?: number;
+  metadata?: Record<string, any>;
+}
+
+export interface WorkSessionIncrementResult {
+  success: boolean;
+  minutesBilled: number;
+  actualCharge: number;
+  newBalance: number;
+  totalCharged: number;
+  shouldEndSession: boolean;
+  insufficientBalance: boolean;
+}
+
+// ============================================
+// Call Billing
+// ============================================
+
+export interface CallBillingIncrementResult {
+  success: boolean;
+  skipped?: boolean;
+  minutesBilled: number;
+  actualCharge: number;
+  newBalance: number;
+  totalCharged: number;
+  shouldEndCall: boolean;
+  insufficientBalance: boolean;
+}
+
+export interface CallHeartbeatResult {
+  ok: boolean;
+  shouldDisconnect?: boolean;
+  balanceLocked?: boolean;
+}
+
+// ============================================
 // API Response Types
 // ============================================
 

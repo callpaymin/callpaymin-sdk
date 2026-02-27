@@ -29,6 +29,8 @@ export { Users } from './resources/users';
 export { Experts } from './resources/experts';
 export { Summaries } from './resources/summaries';
 export { Organization } from './resources/organization';
+export { Rooms } from './resources/rooms';
+export { WorkSessions } from './resources/workSessions';
 
 // Types
 export * from './types';
