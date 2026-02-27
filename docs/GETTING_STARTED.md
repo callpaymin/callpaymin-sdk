@@ -109,6 +109,8 @@ If you chose Fully Managed mode:
 **Self-Managed Mode:**
 ```
 ✓ calls:read, calls:write
+✓ rooms:read, rooms:write
+✓ work_sessions:read, work_sessions:write
 ✓ users:read, users:write
 ✓ experts:read, experts:write
 ✓ billing:read, billing:write
@@ -120,6 +122,8 @@ If you chose Fully Managed mode:
 **Fully Managed Mode:**
 ```
 ✓ calls:read, calls:write
+✓ rooms:read, rooms:write
+✓ work_sessions:read, work_sessions:write
 ✓ users:read, users:write
 ✓ experts:read, experts:write
 ✓ billing:read
@@ -393,6 +397,63 @@ console.log('Platform revenue:', endedCall.billing.platformRevenue);
 
 ---
 
+### Create a Meeting Room
+
+Meeting rooms support multi-participant video with per-participant billing:
+
+```typescript
+// 1. Create room
+const room = await client.rooms.create({
+  expertExternalId: 'expert_456',
+  name: 'Consultation Room',
+  maxParticipants: 5,
+});
+
+// 2. Participants join
+const joinResult = await client.rooms.join(room.id, {
+  participantExternalId: 'user_123',
+  participantName: 'John Doe',
+});
+console.log('SFU Token:', joinResult.sfuToken);
+console.log('Affordable minutes:', joinResult.affordableMinutes);
+
+// 3. Send heartbeat every 30s + billing increment every 5min
+// (see Integration Guide for timer setup)
+
+// 4. Close room when done (bills all remaining participants)
+await client.rooms.close(room.id, 'expert_456');
+```
+
+---
+
+### Start a Work Session
+
+Work sessions support screen sharing with 5-minute incremental billing:
+
+```typescript
+// 1. Create session
+const session = await client.workSessions.create({
+  jobId: 'job_789',
+  questerId: 'user_123',
+  workerId: 'expert_456',
+  ratePerMinute: 0.50,
+});
+
+// 2. Process billing every 5 minutes
+const result = await client.workSessions.processIncrement(
+  session.id,
+  'user_123',
+  { videoCallActive: false },
+);
+console.log('Billed:', result.actualCharge);
+
+// 3. End session
+const ended = await client.workSessions.end(session.id, 'user_123');
+console.log('Total cost:', ended.totalCost);
+```
+
+---
+
 ## 6. Testing
 
 ### Use Test Mode
@@ -482,6 +543,11 @@ console.log('Payout amount:', payout.amount);
 
 #### Features
 - [ ] Call creation and ending working
+- [ ] Call incremental billing (5-min cycle) working
+- [ ] Meeting rooms: create, join, leave, close working
+- [ ] Room incremental billing (5-min cycle) working
+- [ ] Work sessions: create, end, disconnect working
+- [ ] Work session incremental billing (5-min cycle) working
 - [ ] Balance tracking accurate
 - [ ] Webhooks receiving and processing events
 - [ ] Error handling implemented
@@ -541,10 +607,12 @@ console.log('Payout amount:', payout.amount);
 Now that you're up and running, explore advanced features:
 
 1. **[WebRTC Video Calls](./INTEGRATION_GUIDE.md#webrtc-video-calls)** - Add video/audio calling
-2. **[Chat Messaging](./INTEGRATION_GUIDE.md#chat-messaging)** - Real-time chat with billing
-3. **[AI Summaries](./INTEGRATION_GUIDE.md#ai-summaries)** - Generate call/chat summaries
-4. **[Webhooks](../examples/node/webhooks.ts)** - Real-time event handling
-5. **[Revenue Optimization](./BUSINESS_GUIDE.md#revenue-models)** - Explore revenue strategies
+2. **[Meeting Rooms](./INTEGRATION_GUIDE.md#meeting-rooms)** - Multi-participant rooms with per-user billing
+3. **[Work Sessions](./INTEGRATION_GUIDE.md#work-sessions)** - Screen sharing with incremental billing
+4. **[Chat Messaging](./INTEGRATION_GUIDE.md#chat-messaging)** - Real-time chat with billing
+5. **[AI Summaries](./INTEGRATION_GUIDE.md#ai-summaries)** - Generate call/chat summaries
+6. **[Webhooks](../examples/node/webhooks.ts)** - Real-time event handling
+7. **[Revenue Optimization](./BUSINESS_GUIDE.md#revenue-models)** - Explore revenue strategies
 
 ---
 
