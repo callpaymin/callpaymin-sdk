@@ -319,3 +319,8 @@ Perfect for:
 ---
 
 **Questions?** Reach out to our sales team at sales@callpaymin.io for personalized guidance on choosing the right payment mode and plan for your business.
+
+
+## Live audio translation and captions
+
+Two-person calls can add translated speech with captions, or captions only. Both participants must consent and select listening languages. Translation costs $0.10/min per call from the organization payer USD wallet. See [the integration guide](live-translation.md) for backend authentication, SDK methods, browser/native transport and setup.

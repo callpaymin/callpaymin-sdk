@@ -379,3 +379,7 @@ try {
 ## License
 
 MIT
+
+## Live translated audio and captions
+
+Use `client.calls.translation()` from your backend for consent, participant credentials and billing; `client.calls.translationCapabilities()` supplies language options. Use the exported `RealtimeAudioTranslation` transport in your browser/native client. Never embed an organization API key in an app. See [the integration guide](docs/live-translation.md) for both modes, examples, wallet charges and deployment requirements.

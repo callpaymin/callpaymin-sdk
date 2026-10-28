@@ -640,3 +640,8 @@ Now that you're up and running, explore advanced features:
 ---
 
 **Ready to build?** Start with our [Integration Guide](./INTEGRATION_GUIDE.md) for detailed implementation steps.
+
+
+## Live audio translation and captions
+
+Two-person calls can add translated speech with captions, or captions only. Both participants must consent and select listening languages. Translation costs $0.10/min per call from the organization payer USD wallet. See [the integration guide](live-translation.md) for backend authentication, SDK methods, browser/native transport and setup.

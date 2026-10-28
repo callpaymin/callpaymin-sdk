@@ -82,6 +82,22 @@ export class Calls {
   /**
    * Get call details by ID
    */
+  /** Server-side only: authenticate your end user before asserting participantId. */
+  async translation(callId: string, params: {
+    action: 'status' | 'request' | 'accept' | 'decline' | 'audio-client-secret' | 'audio-ready' | 'caption' | 'bill' | 'stop';
+    participantId: string;
+    requestId?: string;
+    mode?: 'audio' | 'captions';
+    targetLanguage?: string;
+    audioBase64?: string;
+  }): Promise<Record<string, any>> {
+    return this.client.request('POST', `/calls/${encodeURIComponent(callId)}/translation`, params);
+  }
+
+  async translationCapabilities(callId: string): Promise<Record<string, any>> {
+    return this.client.request('GET', `/calls/${encodeURIComponent(callId)}/translation?action=capabilities`);
+  }
+
   async get(callId: string): Promise<Call> {
     return this.client.request<Call>('GET', `/calls/${callId}`);
   }
