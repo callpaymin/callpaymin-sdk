@@ -20,7 +20,7 @@ Keep the API key on your backend. Authenticate your end user, verify they own th
 | `bill` | `requestId` | Idempotent cumulative settlement / heartbeat |
 | `stop` | `requestId` | Settle and revoke translation; original call continues |
 
-Every mutation after `request` must include the current `requestId`. Old consent, credentials and late caption results cannot affect a replacement session. Get status with `?participantId=part_...`. Target languages are ISO language codes returned by capabilities; do not hard-code the selector. The supported output list currently includes German (`de`) and Polish (`pl`). This does not guarantee equally accurate source recognition for every language, accent or mixed-language utterance.
+Every mutation after `request` must include the current `requestId`. Old consent, credentials and late caption results cannot affect a replacement session. Get status with `?participantId=part_...`. Target languages are ISO language codes returned by capabilities; do not hard-code the selector. The supported output list currently includes **42 languages**: Bulgarian (`bg`), Bengali (`bn`), Catalan (`ca`), Czech (`cs`), Danish (`da`), German (`de`), Greek (`el`), English (`en`), Spanish (`es`), Estonian (`et`), Finnish (`fi`), French (`fr`), Gujarati (`gu`), Hindi (`hi`), Croatian (`hr`), Hungarian (`hu`), Indonesian (`id`), Italian (`it`), Japanese (`ja`), Kannada (`kn`), Korean (`ko`), Lithuanian (`lt`), Latvian (`lv`), Marathi (`mr`), Malay (`ms`), Dutch (`nl`), Norwegian (`no`), Polish (`pl`), Portuguese (`pt`), Romanian (`ro`), Russian (`ru`), Slovak (`sk`), Slovenian (`sl`), Swedish (`sv`), Tamil (`ta`), Telugu (`te`), Filipino (`tl`), Turkish (`tr`), Ukrainian (`uk`), Urdu (`ur`), Vietnamese (`vi`), Chinese (`zh`). Always call `?action=capabilities` for the authoritative live list — this doc is a snapshot. This does not guarantee equally accurate source recognition for every language, accent or mixed-language utterance.
 
 ## Audio + captions client flow
 
@@ -69,7 +69,7 @@ Request `mode: "captions"`, get both participants' consent, and send short, inde
 
 ## Billing and isolation
 
-The translation fee is **$0.10/min per call**, separate from the expert's call rate, debited from the organization's call payer's **USD customer wallet**, not the main app's wallet. Both participants share one cumulative charge; concurrent heartbeats do not double-charge. Audio timing starts only after both clients report ready. Caption timing starts on acceptance. Charges are rounded up to cents and recorded as `live_translation` transactions. Translation fees do not enter the expert revenue-share calculation. A missing heartbeat ends the session after a 15-second grace period; clients must send `stop` for final settlement even after the original call ends. The original call's usual billing lifecycle remains required.
+The translation fee is **$0.10/min per call**, separate from the expert's call rate, debited from the organization's call payer's **USD customer wallet**, not the main app's wallet. Both participants share one cumulative charge; concurrent heartbeats do not double-charge. Audio timing starts only after both clients report ready. Caption timing starts on acceptance. Charges are rounded up to cents and recorded as `live_translation` transactions. Translation fees do not enter the expert revenue-share calculation. Both participants must confirm activity. Ongoing fees stop at their last mutually confirmed activity; a missing heartbeat expires the session after a 45-second timeout; clients must send `stop` for final settlement even after the original call ends. The original call's usual billing lifecycle remains required.
 
 ## Deployment
 
@@ -87,4 +87,7 @@ Use `callpaymin` in production. Keep gateway Deepgram/OpenAI and TURN credential
 
 ## Verification checklist
 
-Test two different organization participants in both translation modes; German/Polish selectors; browser autoplay recovery; Android/iOS audio focus; cross-platform speech in both directions; replacing captions; stop/restart; revoked and expired grants; another organization's key; an outsider participant; zero credit; duplicate ready/bill requests; call end and final settlement. Source code/type checks do not replace this staging call test.
+Test two different organization participants in both translation modes; several language pairs across different scripts (e.g. English↔Spanish, German↔Polish, Hindi↔Japanese, Arabic-script via Urdu↔Vietnamese); browser autoplay recovery; Android/iOS audio focus; cross-platform speech in both directions; replacing captions; stop/restart; revoked and expired grants; another organization's key; an outsider participant; zero credit; duplicate ready/bill requests; call end and final settlement. Source code/type checks do not replace this staging call test.
+
+
+Translation stop hardening: retry stop with the original call/participant/requestId and stopRequestedAt (Unix milliseconds). Never retry against a replacement request. Close the translation connection immediately and prevent stale status responses from restarting it. The SDK exports stopTranslationReliably for bounded confirmation retries.

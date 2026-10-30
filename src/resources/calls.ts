@@ -90,6 +90,7 @@ export class Calls {
     mode?: 'audio' | 'captions';
     targetLanguage?: string;
     audioBase64?: string;
+    stopRequestedAt?: number;
   }): Promise<Record<string, any>> {
     return this.client.request('POST', `/calls/${encodeURIComponent(callId)}/translation`, params);
   }

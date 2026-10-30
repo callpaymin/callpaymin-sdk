@@ -36,3 +36,5 @@ export { WorkSessions } from './resources/workSessions';
 export * from './types';
 
 export { RealtimeAudioTranslation, AUDIO_TRANSLATION_LANGUAGES } from "./webrtc/realtimeAudioTranslation";
+
+export { stopTranslationReliably } from './webrtc/translationStop';
